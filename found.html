@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>📦 I Found Something!</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <style>
+      body {
+        font-family: "Orbitron", sans-serif;
+        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        color: white;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .form-container {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 35px;
+        border-radius: 20px;
+        box-shadow: 0 0 25px cyan;
+        max-width: 480px;
+        width: 90%;
+        backdrop-filter: blur(15px);
+        animation: popin 0.6s ease-out forwards;
+        transform: scale(0.9);
+        opacity: 0;
+        margin-top: 50px;
+      }
+
+      @keyframes popin {
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      h2 {
+        text-align: center;
+        color: cyan;
+        font-size: 2.1rem;
+        margin-bottom: 25px;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 12px;
+        margin-top: 10px;
+        margin-bottom: 15px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        background: #e0f7fa;
+        transition: box-shadow 0.3s;
+      }
+
+      input:focus,
+      textarea:focus,
+      select:focus {
+        box-shadow: 0 0 10px cyan;
+        outline: none;
+      }
+
+      button {
+        width: 100%;
+        padding: 14px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        background: linear-gradient(to right, #00f7ff, #00d4ff);
+        color: black;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: 0.3s ease;
+        box-shadow: 0 0 10px #00f7ff;
+      }
+
+      button:hover {
+        background: linear-gradient(to right, #00d4ff, #00f7ff);
+        transform: scale(1.03);
+        box-shadow: 0 0 20px cyan;
+      }
+
+      .success-popup {
+        position: fixed;
+        top: 30px;
+        right: 30px;
+        background: #00ffcc;
+        color: black;
+        padding: 15px 25px;
+        border-radius: 15px;
+        font-weight: bold;
+        box-shadow: 0 0 20px #00ffcc;
+        animation: fadeInOut 3s ease forwards;
+      }
+
+      @keyframes fadeInOut {
+        0% {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        10%,
+        90% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+      }
+
+      footer {
+        margin-top: auto;
+        padding: 20px;
+        width: 100%;
+        background: #0f0c29;
+        text-align: center;
+        font-size: 1rem;
+        color: #ccc;
+        border-top: 1px solid #333;
+        animation: slideUp 1s ease-out forwards;
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translateY(30px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      /* 👇 Mobile Styles Fix 👇 */
+      @media screen and (max-width: 480px) {
+        .form-container {
+          padding: 25px;
+        }
+
+        input,
+        select,
+        textarea,
+        button {
+          font-size: 0.9rem;
+          padding: 10px;
+        }
+
+        h2 {
+          font-size: 1.5rem;
+        }
+
+        .success-popup {
+          top: 20px;
+          right: 20px;
+          font-size: 0.9rem;
+          padding: 10px 15px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="form-container">
+      <h2>📢 Found Something? Let Others Know!</h2>
+      <form id="foundForm">
+        <input type="text" id="title" placeholder="📌 Item Title" required />
+        <textarea
+          id="description"
+          placeholder="📝 Describe what you found..."
+          required
+        ></textarea>
+        <select id="category" required>
+          <option value="">📂 Select Category</option>
+          <option value="Electronics">💻 Electronics</option>
+          <option value="Accessories">🎒 Accessories</option>
+          <option value="Documents">📄 Documents</option>
+          <option value="Others">🔎 Others</option>
+        </select>
+        <input
+          type="email"
+          id="email"
+          placeholder="📧 Your Email (for contact)"
+          required
+        />
+        <button type="submit">🚀 Submit Found Item</button>
+      </form>
+    </div>
+
+    <footer>
+      🌐 Built with 💙 by Team Motion 🚀&mdash; Helping lost things get home!
+      🔍📦
+
+      <p style="margin-top: 10px">
+        <a
+          href="https://github.com/bhavya092007"
+          target="_blank"
+          style="color: cyan; text-decoration: none; margin: 0 10px"
+        >
+          🐙 GitHub
+        </a>
+        |
+        <a
+          href="mailto:sbhavya838@gmail.com"
+          style="color: cyan; text-decoration: none; margin: 0 10px"
+        >
+          📧 Email
+        </a>
+        |
+        <a
+          href="https://instagram.com/bhavyashah272"
+          target="_blank"
+          style="color: cyan; text-decoration: none; margin: 0 10px"
+        >
+          📸 Instagram
+        </a>
+      </p>
+    </footer>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyCQ42TIVXzijvpMlJYm5sD9PyeRHA8FRoY",
+        authDomain: "team-motion.firebaseapp.com",
+        projectId: "team-motion",
+        storageBucket: "team-motion.appspot.com",
+        messagingSenderId: "851783352512",
+        appId: "1:851783352512:web:159546d543f20bc2382d25",
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+      const form = document.getElementById("foundForm");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const title = document.getElementById("title").value.trim();
+        const description = document.getElementById("description").value.trim();
+        const category = document.getElementById("category").value;
+        const email = document.getElementById("email").value.trim();
+
+        if (!title || !description || !category || !email) {
+          alert("⚠️ Please fill all fields!");
+          return;
+        }
+
+        try {
+          await db.collection("items").add({
+            title,
+            description,
+            category,
+            email,
+            createdAt: new Date(),
+          });
+          form.reset();
+          showPopup("✅ Found item posted successfully!");
+        } catch (err) {
+          console.error("Error saving item:", err);
+          alert("❌ Failed to save item. Try again.");
+        }
+      });
+
+      function showPopup(message) {
+        const popup = document.createElement("div");
+        popup.className = "success-popup";
+        popup.textContent = message;
+        document.body.appendChild(popup);
+        setTimeout(() => popup.remove(), 3000);
+      }
+    </script>
+  </body>
+</html>

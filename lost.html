@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lost Items</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap"
+      rel="stylesheet"
+    />
+    <!-- firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <!-- emailjs -->
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+    <style>
+      body {
+        font-family: "Orbitron", sans-serif;
+        background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+        margin: 0;
+        padding: 20px;
+        color: white;
+        box-sizing: border-box;
+      }
+
+      h1 {
+        text-align: center;
+        font-size: 3rem;
+        color: cyan;
+        margin-bottom: 30px;
+      }
+
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 30px;
+      }
+
+      input,
+      select {
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: none;
+        font-size: 1rem;
+        outline: none;
+        max-width: 90vw;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 0 10px cyan;
+        position: relative;
+        transition: 0.3s;
+      }
+
+      .card:hover {
+        transform: scale(1.02);
+        box-shadow: 0 0 20px cyan;
+      }
+
+      .card h3 {
+        margin-top: 0;
+        font-size: 1.5rem;
+      }
+
+      .btn {
+        margin-top: 10px;
+        padding: 10px;
+        background: #00f7ff;
+        color: black;
+        border: none;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .btn:hover {
+        background: cyan;
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 50px;
+        padding: 20px;
+        font-size: 0.95rem;
+        color: #cccccc;
+        font-style: italic;
+      }
+
+      .footer a.footer-link {
+        color: #00f7ff;
+        text-decoration: none;
+        margin: 0 6px;
+        transition: all 0.3s ease-in-out;
+      }
+
+      .footer a.footer-link:hover {
+        color: white;
+        text-shadow: 0 0 10px cyan;
+      }
+
+      /* mobile interface screen */
+      @media screen and (max-width: 480px) {
+        input,
+        select {
+          font-size: 0.95rem;
+          padding: 10px 12px;
+          width: 100%;
+          max-width: 100%;
+        }
+
+        .filters {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .btn {
+          font-size: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔍 Lost? Find Your Item</h1>
+
+    <div class="filters">
+      <input type="text" id="searchTitle" placeholder="Search by title" />
+      <select id="searchCategory">
+        <option value="">All Categories</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Accessories">Accessories</option>
+        <option value="Documents">Documents</option>
+        <option value="Others">Others</option>
+      </select>
+    </div>
+
+    <div class="cards" id="itemsContainer">
+      <!-- <-- for card -->
+    </div>
+
+    <script>
+      //firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyCQ42TIVXzijvpMlJYm5sD9PyeRHA8FRoY",
+        authDomain: "team-motion.firebaseapp.com",
+        projectId: "team-motion",
+        storageBucket: "team-motion.appspot.com",
+        messagingSenderId: "851783352512",
+        appId: "1:851783352512:web:159546d543f20bc2382d25",
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
+      // emaijs
+      emailjs.init("44o9lK59zhLmn2KDA");
+
+      let allItems = [];
+
+      async function fetchItems() {
+        const snapshot = await db.collection("items").get();
+        allItems = snapshot.docs.map((doc) => doc.data());
+        renderItems();
+      }
+
+      function renderItems() {
+        const titleFilter = document
+          .getElementById("searchTitle")
+          .value.toLowerCase();
+        const categoryFilter = document
+          .getElementById("searchCategory")
+          .value.toLowerCase();
+
+        const container = document.getElementById("itemsContainer");
+        container.innerHTML = "";
+
+        const filtered = allItems.filter((item) => {
+          return (
+            item.title.toLowerCase().includes(titleFilter) &&
+            (categoryFilter === "" ||
+              item.category.toLowerCase() === categoryFilter)
+          );
+        });
+
+        if (filtered.length === 0) {
+          container.innerHTML =
+            "<p style='text-align:center;width:100%'>No items found.</p>";
+        }
+
+        filtered.forEach((item) => {
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+            <h3>${item.title}</h3>
+            <p><strong>Description:</strong> ${item.description}</p>
+            <p><strong>Category:</strong> ${item.category}</p>
+            <button class="btn" onclick="sendMessage('${item.email}', '${item.title}')">Send Message</button>
+          `;
+          container.appendChild(card);
+        });
+      }
+
+      function sendMessage(toEmail, itemTitle) {
+        const message = prompt("Enter your message for the finder:");
+        if (!message) return;
+
+        emailjs
+          .send("service_quyek5u", "template_xcl8wnm", {
+            to_email: toEmail,
+            item_title: itemTitle,
+            message: message,
+          })
+          .then(() => {
+            alert("✅ Message sent successfully!");
+          })
+          .catch((err) => {
+            console.error("EmailJS Error:", err);
+            alert("❌ Failed to send message. Check console.");
+          });
+      }
+
+      document
+        .getElementById("searchTitle")
+        .addEventListener("input", renderItems);
+      document
+        .getElementById("searchCategory")
+        .addEventListener("change", renderItems);
+
+      // item fetching
+      fetchItems();
+    </script>
+
+    <div class="footer">
+      🔧 Made with ❤️ by <strong>Team Motion 🚀</strong> |
+      <a
+        href="https://instagram.com/bhavyashah272"
+        target="_blank"
+        class="footer-link"
+        >📸 Instagram</a
+      >
+      |
+      <a
+        href="https://github.com/bhavya092007"
+        target="_blank"
+        class="footer-link"
+        >💻 GitHub</a
+      >
+      |
+      <a href="mailto:sbhavya838@gmail.com" class="footer-link">📩 Email</a>
+    </div>
+  </body>
+</html>
